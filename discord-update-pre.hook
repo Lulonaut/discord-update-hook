@@ -1,0 +1,9 @@
+[Trigger]
+Type = Package
+Operation = Upgrade
+Target = discord*
+
+[Action]
+When = PreTransaction
+Exec = /etc/pacman.d/hooks/bin/discord-update pre
+NeedsTargets

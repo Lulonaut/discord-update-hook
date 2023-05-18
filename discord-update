@@ -1,0 +1,27 @@
+#!/bin/sh
+
+while IFS= read -r target
+do 
+    echo "Searching for app.asar..."
+    file="null"
+
+	while IFS= read -r path
+	do
+		result=$(expr "$path" : "$target /..*/app\\.asar\$")
+
+		[ "$result" -gt "0" ] && file=$(expr substr "$path" "$((${#target}+2))" "${#path}")
+	done <<< $(pacman -Ql $target)
+    echo "Found: $file"
+
+    if [ "$1" == "pre" ]; then 
+        [ -d "$file" ] || { echo "$file is not a directory, skipping!" ; exit 0; }
+        echo "app.asar seems to be a directory, renaming for update..."
+        mv "$file" "$file.temp" && echo "OK"
+    else
+        [ -d "$file.temp" ] || { echo "package does not seem to be affected by PreTransaction hook, skipping!" ; exit 0; }
+        echo "Restoring previous app.asar state..."
+
+        rm "$file"
+        mv "$file.temp" "$file" && echo "OK"
+    fi 
+done
